@@ -1,7 +1,7 @@
 class foo:
-    def bar(self):
-        print("hi")
+    def bar(self, name):
+        print("hi " + name)
 
 
 f = foo()
-f.bar()
+f.bar('alex')
