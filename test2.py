@@ -1,4 +1,4 @@
-# test input grabber
+# test input grabber, just testink ;)
 
 class inputclass:
 
