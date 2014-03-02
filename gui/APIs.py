@@ -32,22 +32,20 @@ def system_path(): # returns system PATH environment variable
     import sys
     print(sys.path)
 
-class PING:
-    def pinger(ip): # pings ip address
-        import subprocess
-        import re   
-        __builtins__.output1 = "Pinging %s" % ip
-        ret = subprocess.call("ping -c 1 %s" % ip, shell=True, # checks whether site is up
-                                  stdout=open('/dev/null', 'w'),
-                                  stderr=subprocess.STDOUT)
-        if ret == 0:
-            CMD = ['ping', '-c', '1', '%s' % ip]
-            result = str(subprocess.check_output(CMD)) # gets 3 ping times
-            __builtins__.output2 = "%s is up! (%s)" % (ip, result)
-            
-                 
-        else:
-            __builtins__.output3 = "%s didn't respond." % ip # these need to be displayed by print/labelVariable.set()
+def pinger(ip): # pings ip address
+    import subprocess
+
+    global ping_first
+    ping_first = str("Pinging %s, please wait..." % ip)
+
+    process = subprocess.Popen(["ping", "-v", "-c 3", "%s" % ip], stdout=subprocess.PIPE, stderr = subprocess.PIPE)
+    out, error = process.communicate()
+    out = out.strip()
+    error = error.strip()
+    global output
+    output = out.decode('utf-8')
+    global errorout
+    errorout = error.decode('utf-8')
             
 
         
