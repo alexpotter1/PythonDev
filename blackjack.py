@@ -40,12 +40,15 @@ while score <= 21:
 
     while CPUscore <= 17:
         CPUscore += drawCard("CPU")
+        print("CPU has %i" % CPUscore)
     
 if score > 21:
     print("You lose")
-elif score < 21 and CPUscore > 21:
+elif score <= 21 and CPUscore > 21:
     print("CPU loses")
 elif score == 21 and CPUscore == 21:
+    print("You lose (House rules)")
+elif score < CPUscore and CPUscore <= 21:
     print("You lose")
 else:
     print("You win")
