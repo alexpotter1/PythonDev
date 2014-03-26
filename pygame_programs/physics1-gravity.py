@@ -1,10 +1,12 @@
 # pygame
 
 try:
-    import pygame, sys
+    import pygame
     pass
 except ImportError:
     print("Please install Pygame! ('sudo apt-get install python-pygame')")
+
+
 
 pygame.init()
 size = width, height = 640,480
@@ -12,17 +14,17 @@ black = 0,0,0
 white = 255,255,255
 red = 255,0,0
 
-gravity = 1.5
+gravity = 0.8
 momentum = 0.8
 
 pygame.display.set_caption("Alex's Game")
 screen = pygame.display.set_mode(size)
 
 
-#paddle = pygame.Surface((60,10))
-#paddle.fill(white)
-#paddlerectangle = paddle.get_rect(center=((size[0]/2,size[1]-50)))# places paddle rectangle to half of the screen width
-#paddlespeed = [2,2]
+paddle = pygame.Surface((60,10))
+paddle.fill(white)
+paddlerectangle = paddle.get_rect(center=((size[0]/2,size[1]-50)))# places paddle rectangle to half of the screen width
+
 
 
 ball = pygame.Surface((50,50)) # creates new ball surface
@@ -34,9 +36,9 @@ pygame.draw.circle(ball,red,[25,25], 25) # x,y,radius
 clock = pygame.time.Clock()
 
 
-#font = pygame.font.SysFont("arial", 40)
-#text = font.render("Game Over!", 1, white)
-#textRect = text.get_rect(center=((width/2,height/2)))
+font = pygame.font.SysFont("arial", 40)
+text = font.render("Game Over!", 1, white)
+textRect = text.get_rect(center=((width/2,height/2)))
     
     
     
@@ -51,22 +53,40 @@ def FPS(targetFPS):
     FPS.fpsCounterRect = FPS.fpsCounter.get_rect(center=(width - (width -40), height -(height-20)))
 
 
-MouseLeftButton = 0
+def draw():
+    FPS(60)
+    screen.fill(black)
+    screen.blit(ball,ballrectangle) # moves ball onto screen
+    screen.blit(FPS.fpsCounter, FPS.fpsCounterRect)
+    screen.blit(paddle, paddlerectangle)
+    pygame.display.flip() # double buffering, waits until frame is fully drawn
 
-while True:
+
+
+
+
+MouseLeftButton = 0
+step = 2
+BallBottom = 0
+running = True
+while running:
     for event in pygame.event.get():
         if (event.type == pygame.QUIT):
-			sys.exit() # allows program to exit and clears memory
-        if(event.type == pygame.MOUSEMOTION):
-            if event.buttons[MouseLeftButton]: # left button clicked and moving
-                relative = event.rel
-                speed[0] += float((relative[0]/10))
-                speed[1] += float((relative[1]/10))
-				
+            running = False
+        #if(event.type == pygame.MOUSEMOTION):
+            #if event.buttons[MouseLeftButton]: # left button clicked and moving
+                #relative = event.rel
+                #speed[0] += float((relative[0]/10))
+                #speed[1] += float((relative[1]/10))
+
+
+    position = pygame.mouse.get_pos()
+    x = int(position[0])
+    paddlerectangle.right = x
+
 
     speed[1] += gravity
 
-    FPS(60)
 
 			
     ballrectangle = ballrectangle.move(speed)
@@ -77,27 +97,33 @@ while True:
         speed[1] *= momentum
         speed[1] = -speed[1]
 
-	#paddlerectangle=paddlerectangle.move(paddlespeed)
+
+    if ballrectangle.bottom > height:
+        BallBottom = 1
+
+    if BallBottom == 1:
+        screen.blit(text, textRect)
+        pygame.display.update()
+
+
+
 	
-	#if ballrectangle.colliderect(paddlerectangle):
-		#speed[1] *= momentum
-		#speed[1] = -speed[1]
+	if paddlerectangle.colliderect(ballrectangle):
+		speed[1] *= momentum
+        speed[1] = -speed[1]
+
 
     ballrectangle.left = clip(ballrectangle.left, 0, width)
     ballrectangle.right = clip(ballrectangle.right, 0, width)
     ballrectangle.top = clip(ballrectangle.top, 0, height)
     ballrectangle.bottom = clip(ballrectangle.bottom, 0, height)
     
-    #paddlerectangle.left = clip(paddlerectangle.left, 0, width)
-    #paddlerectangle.right = clip(paddlerectangle.right, 0,width)
-    #paddlerectangle.top = clip(paddlerectangle.top, 0, height)
-    #paddlerectangle.bottom = clip(paddlerectangle.bottom, 0, height)
-			
-    screen.fill(black)
-    screen.blit(ball,ballrectangle) # moves ball onto screen
-    #screen.blit(paddle,paddlerectangle)
-    screen.blit(FPS.fpsCounter, FPS.fpsCounterRect)
-    #screen.blit(text, textRect)
-    pygame.display.flip() # double buffering, waits until frame is fully drawn
+    paddlerectangle.left = clip(paddlerectangle.left, 0, width)
+    paddlerectangle.right = clip(paddlerectangle.right, 0,width)
+    paddlerectangle.top = clip(paddlerectangle.top, 0, height)
+    paddlerectangle.bottom = clip(paddlerectangle.bottom, 0, height)
+
+    draw()
+
 		
 

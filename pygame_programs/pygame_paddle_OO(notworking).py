@@ -63,7 +63,7 @@ class ProgramMain():
 		
 	def Main(self): # this needs to be called last
 		ball = pygame.Surface((50,50))
-		ballrectangle = ball.get_rect(center=(ProgramInit.self.screenx - (ProgramInit.self.screenx - 600), ProgramInit.self.screeny - (ProgramInit.self.screeny - 400)))
+		ballrectangle = ball.get_rect(center=(ProgramInit.screenx - (ProgramInit.screenx - 600), ProgramInit.screeny - (ProgramInit.screeny - 400)))
 		pygame.draw.circle(ball,(255,0,0),[25,25],25)
 		
 		
