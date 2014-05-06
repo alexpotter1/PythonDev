@@ -14,29 +14,33 @@ class Ball():
 	height = 480 # symlink to size in main program 
 	
 	
-	
-	def __init__(self):
-		print('inited')
+	def __init__(self, speed, colour, sizex, sizey, posx, posy, rad):
+		self.colour = colour
+		self.speed = speed
 		
-	def setColour(self, (r, g, b)):
-		self.colour = (r, g, b)
-		
-	def getColour(self):
-		return self.colour
-		
-	def createBall(self, sizex, sizey, rad):
 		self.sizex = sizex
 		self.sizey = sizey
 		self.rad = rad
+		self.posx = posx
+		self.posy = posy
 		
 		ball = pygame.Surface((self.sizex, self.sizey)) # creates new ball surface
 		self.ball = ball
 		
-		pygame.draw.circle(self.ball,self.getColour(),[25,25], self.rad) # x,y,radius
-		ballrectangle = self.ball.get_rect(center=([self.sizex/2, self.sizey/2])) # attaches collision box to ball
-		self.ballrectangle = ballrectangle	
+		pygame.draw.circle(self.ball,self.getColour(),[self.sizex/2, self.sizey/2], self.rad) # x,y,radius
+		self.ballrectangle = self.ball.get_rect() # attaches collision box to ball
+		self.ballrectangle.center = [self.posx,self.posy]
+		print("Ball created")
+		print('inited')
+
 		
-	def Physics(self):
+	def getColour(self):
+		return self.colour
+		
+	def clip(self, value, minval, maxval):
+		return min(max(value,minval), maxval)
+		
+	def physics(self):
 		self.ballrectangle = self.ballrectangle.move(self.speed)
 		
 		if (self.ballrectangle.left < 0 or self.ballrectangle.right > self.width):
@@ -45,6 +49,23 @@ class Ball():
 		if (self.ballrectangle.top < 0 or self.ballrectangle.bottom > self.height):
 			#speed[1] *= momentum
 			self.speed[1] = -self.speed[1]
+			
+		if self.ballrectangle.bottom > height:
+			screen.blit(text, textRect)
+			pygame.display.update()
+			pygame.time.delay(2000)
+			self.ballrectangle.top = 0
+			
+		self.ballrectangle.left = self.clip(self.ballrectangle.left, 0, width)
+		self.ballrectangle.right = self.clip(self.ballrectangle.right, 0, width)
+		self.ballrectangle.top = self.clip(self.ballrectangle.top, 0, height)
+		self.ballrectangle.bottom = self.clip(self.ballrectangle.bottom, 0, height)
+		
+		if paddlerectangle.colliderect(self.ballrectangle):
+			#speed[1] *= momentum
+			self.speed[1] = -self.speed[1]
+			
+		
 		
 	
 
@@ -81,10 +102,15 @@ font = pygame.font.SysFont("arial", 40)
 text = font.render("Game Over!", 1, white)
 textRect = text.get_rect(center=((width/2,height/2)))
     
-    
-    
-def clip(value, minval, maxval):
-	return min(max(value,minval), maxval)
+collisionsChecked = []  
+  
+def checkIfCollided(collider):
+	notFound = False
+	for c in collisionsChecked:
+		if c == collider:
+			return True
+	return False    
+
 
 def FPS(targetFPS):
     clock.tick_busy_loop(targetFPS)
@@ -97,25 +123,26 @@ def FPS(targetFPS):
 def draw():
     FPS(60)
     screen.fill(black)
-    screen.blit(b1.ball,b1.ballrectangle) # moves ball onto screen
-    screen.blit(b2.ball,b2.ballrectangle)
     screen.blit(FPS.fpsCounter, FPS.fpsCounterRect)
     screen.blit(paddle, paddlerectangle)
-    pygame.display.flip() # double buffering, waits until frame is fully drawn
+
+    
+    for ball in balls:
+		screen.blit(ball.ball, ball.ballrectangle)
+	
+    pygame.display.flip()
+
+
+balls = [Ball([3,3],red,50,50,300,300,25),Ball([2,2],azure,50,50,100,100,25)]
 
 
 
-b1 = Ball()
-b1.setColour(azure)
-b1.createBall(50,50,25)
 
-b2 = Ball()
-b2.setColour(red)
-b2.createBall(50,50,25)
+
+
 
 
 MouseLeftButton = 0
-step = 2
 running = True
 while running:
     for event in pygame.event.get():
@@ -128,40 +155,43 @@ while running:
                 #speed[1] += float((relative[1]/10))
 
 
-    position = pygame.mouse.get_pos()
-    x = int(position[0])
+	
+	position = pygame.mouse.get_pos()
+	x = int(position[0])
     paddlerectangle.right = x
     
-    if paddlerectangle.colliderect(b1.ballrectangle):
-		#speed[1] *= momentum
-		b1.speed[1] = -b1.speed[1]
 
     #speed[1] += gravity
+    collisionsChecked = []
 
-
-    b1.Physics()
+    for ball in balls:
+		ball.physics()
 		
-
-
-
-    if b1.ballrectangle.bottom > height:
-        screen.blit(text, textRect)
-        pygame.display.update()
-        pygame.time.delay(2000)
-        b1.ballrectangle.top = 0
-
-
-    b1.ballrectangle.left = clip(b1.ballrectangle.left, 0, width)
-    b1.ballrectangle.right = clip(b1.ballrectangle.right, 0, width)
-    b1.ballrectangle.top = clip(b1.ballrectangle.top, 0, height)
-    b1.ballrectangle.bottom = clip(b1.ballrectangle.bottom, 0, height)
+		for collision in balls:
+			if checkIfCollided(collision) == False:
+				if collision != ball:
+					if ball.ballrectangle.colliderect(collision.ballrectangle):
+						collisionsChecked.append(ball)
+						collisionsChecked.append(collision)
+						ball.speed[1] = -ball.speed[1]
+						collision.speed[1] = -collision.speed[1]
+						
+						ball.speed[0] = -ball.speed[0]
+						collision.speed[0] = -collision.speed[0]
+				
+		
+	
+		
+	
     
-    paddlerectangle.left = clip(paddlerectangle.left, 0, width)
-    paddlerectangle.right = clip(paddlerectangle.right, 0,width)
-    paddlerectangle.top = clip(paddlerectangle.top, 0, height)
-    paddlerectangle.bottom = clip(paddlerectangle.bottom, 0, height)
+    paddlerectangle.left = balls[0].clip(paddlerectangle.left, 0, width)
+    paddlerectangle.right = balls[0].clip(paddlerectangle.right, 0,width)
+    paddlerectangle.top = balls[0].clip(paddlerectangle.top, 0, height)
+    paddlerectangle.bottom = balls[0].clip(paddlerectangle.bottom, 0, height)
 
     draw()
+    
+    
 
 		
 
